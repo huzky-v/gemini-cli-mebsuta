@@ -44,6 +44,8 @@ You need to mount your local `.gemini-collection` and `.gemini` directories into
 ```
     docker run -p 3000:3000 -v /path/to/your/.gemini-collection:/.gemini-collection -v ~/.gemini:/.gemini gemini-mebsuta
 ```
+The dashboard could be accessed via `http://127.0.0.1:3000`
+
 **Note:** If you change the exposed port, please update your `script/gemini.sh` also.
 
 ## Environment Variables
