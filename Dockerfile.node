@@ -1,0 +1,36 @@
+# Use the official Bun image as a base image
+FROM node:lts-slim
+
+# Install tini and curl
+RUN apt-get update && apt-get install -y tini curl
+
+# Set the working directory in the container
+WORKDIR /app
+
+# Copy package.json and package-lock.json (if available)
+COPY package.json .
+COPY package-lock.json* .
+
+# Install dependencies using npm
+RUN npm ci
+
+# Copy the rest of the application code
+COPY server.js .
+COPY public ./public
+COPY entry.sh .
+
+# Make entry.sh executable
+RUN chmod +x entry.sh
+
+# Create mount points for .gemini and .gemini-collection directories
+# These directories can be mounted from the host to provide Gemini configuration
+VOLUME [ "/app/.gemini", "/app/.gemini-collection" ]
+
+# Expose the port the app runs on
+EXPOSE 3000
+
+# Use tini to manage the entrypoint script
+ENTRYPOINT ["/usr/bin/tini", "--", "./entry.sh"]
+
+# Define the default command to run the application
+CMD ["node", "server.js"]

@@ -1,0 +1,32 @@
+# Use the official Bun image as a base image
+FROM oven/bun:canary-alpine
+
+# Set the working directory in the container
+WORKDIR /app
+
+# Copy package.json and bun.lock (if available)
+COPY package.json .
+COPY bun.lock* .
+
+# Install dependencies using bun
+RUN bun install
+
+# Copy the rest of the application code
+COPY server.js .
+COPY public ./public
+COPY entry.sh .
+
+# Make entry.sh executable
+RUN chmod +x entry.sh
+
+# Create mount points for .gemini and .gemini-collection directories
+# These directories can be mounted from the host to provide Gemini configuration
+VOLUME [ "/app/.gemini", "/app/.gemini-collection" ]
+
+# Expose the port the app runs on
+EXPOSE 3000
+
+ENTRYPOINT ["./entry.sh"]
+
+# Define the default command to run the application
+CMD ["bun", "server.js"]

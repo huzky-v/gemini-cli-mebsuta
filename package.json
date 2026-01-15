@@ -1,0 +1,20 @@
+{
+  "name": "gemini-cli-mebsuta",
+  "version": "1.0.0",
+  "description": "",
+  "main": "gemini.js",
+  "scripts": {
+    "bun-build": "docker build . -f Dockerfile.bun -t gemini-mebsuta",
+    "build-node": "docker build . -f Dockerfile.node -t gemini-mebsuta",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "axios": "^1.13.2",
+    "express": "^5.2.1",
+    "node-cron": "^4.2.1"
+  }
+}
