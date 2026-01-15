@@ -1,6 +1,6 @@
 # Gemini CLI Mebsuta
 
-![screenshot](screenshot/dashboard.png)
+![screenshot](screenshot/dashboard.png)  
 This project is a web-based dashboard that displays Gemini API usage statistics.  
 It provides a clear overview of the remaining quota for different Gemini models, tracks multiple accounts, and offers a visual representation of usage data.  
 
