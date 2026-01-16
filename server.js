@@ -258,23 +258,37 @@ async function fetchGeminiStats() {
       .filter((dirent) => dirent.isDirectory())
       .map((dirent) => dirent.name);
 
-    for (const subfolder of subfolders) {
-      const configDir = path.join(collectionPath, subfolder);
-      const usageData = await getGeminiUsage(configDir, subfolder);
-      const email = await getEmail(configDir);
-      const isCurrent = subfolder === currentProjectId;
-      const metric = {
-        projectId: subfolder,
-        isCurrent,
-        ...usageData,
-        email,
-      };
+    const CONCURRENT_LIMIT = 3;
+    const taskQueue = [...subfolders];
 
-      if (isCurrent && metric.models && metric.models["Pro"]) {
-        metric.isCurrentLow = metric.models["Pro"].low_threshold;
-      }
-      metrics.push(metric);
-    }
+    const promises = Array(CONCURRENT_LIMIT)
+      .fill(0)
+      .map(async () => {
+        const results = [];
+        while (taskQueue.length > 0) {
+          const subfolder = taskQueue.shift();
+          if (subfolder) {
+            const configDir = path.join(collectionPath, subfolder);
+            const usageData = await getGeminiUsage(configDir, subfolder);
+            const email = await getEmail(configDir);
+            const isCurrent = subfolder === currentProjectId;
+            const metric = {
+              projectId: subfolder,
+              isCurrent,
+              ...usageData,
+              email,
+            };
+
+            if (isCurrent && metric.models && metric.models["Pro"]) {
+              metric.isCurrentLow = metric.models["Pro"].low_threshold;
+            }
+            results.push(metric);
+          }
+        }
+        return results;
+      });
+
+    metrics = (await Promise.all(promises)).flat();
   } catch (error) {
     if (error.code === "ENOENT") {
       // do nothing if folder doesn't exist
@@ -339,10 +353,25 @@ async function fetchGeminiStats() {
   };
 }
 
-cron.schedule("* * * * *", async () => {
-  statsData = await fetchGeminiStats();
-  lastUpdatedTime = new Date();
-});
+// Background task pattern to ensure only one query task runs at a time.
+let isQueryTaskRunning = false;
+const runQueryTask = async () => {
+  if (isQueryTaskRunning) {
+    console.log("Query task is already running. Skipping this execution.");
+    return;
+  }
+  isQueryTaskRunning = true;
+  try {
+    statsData = await fetchGeminiStats();
+    lastUpdatedTime = new Date();
+  } catch (error) {
+  } finally {
+    isQueryTaskRunning = false;
+  }
+};
+
+// Schedule the background task to run every minute.
+cron.schedule("* * * * *", runQueryTask);
 
 app.use(express.static("public"));
 
@@ -411,11 +440,7 @@ const PORT = process.env.PORT || 3000;
 const server = app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
   // Fetch initial stats on startup
-  fetchGeminiStats().then((data) => {
-    statsData = data;
-    lastUpdatedTime = new Date();
-    console.log("Initial stats fetched.");
-  });
+  runQueryTask();
 });
 
 // Graceful shutdown
