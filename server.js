@@ -347,6 +347,8 @@ async function fetchGeminiStats() {
     }
   }
 
+  metrics.sort((a, b) => (a.isCurrent === b.isCurrent ? 0 : a.isCurrent ? -1 : 1));
+
   return {
     metrics,
     prefer,

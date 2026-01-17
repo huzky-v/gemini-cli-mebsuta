@@ -75,10 +75,10 @@ function renderMetrics(data) {
         const legendContainer = document.createElement('div');
         legendContainer.className = 'legend-container';
 
-        let svg = `<svg width="150" height="150" viewBox="0 0 150 150">`;
+        let svg = `<svg width="225" height="225" viewBox="0 0 300 300">`;
         
-        let radius = 70;
-        const strokeWidth = 10;
+        let radius = 105;
+        const strokeWidth = 9;
         let tspanElements = [];
         let modelEntries = [];
 
@@ -91,8 +91,8 @@ function renderMetrics(data) {
                 const dasharray = (percentage / 100) * circumference;
                 const gap = circumference - dasharray;
 
-                svg += `<circle class="circle-bg" cx="75" cy="75" r="${radius}" stroke-width="${strokeWidth}"></circle>`;
-                svg += `<circle class="circle-progress" cx="75" cy="75" r="${radius}" stroke="${color}" stroke-dasharray="${dasharray} ${gap}" stroke-width="${strokeWidth}"></circle>`;
+                svg += `<circle class="circle-bg" cx="150" cy="150" r="${radius}" stroke-width="${strokeWidth}"></circle>`;
+                svg += `<circle class="circle-progress" cx="150" cy="150" r="${radius}" stroke="${color}" stroke-dasharray="${dasharray} ${gap}" stroke-width="${strokeWidth}"></circle>`;
                 
                 tspanElements.push({ text: `${percentage}%`, color: color });
 
@@ -132,12 +132,12 @@ function renderMetrics(data) {
         // Add single text element in the center with tspans
         if (tspanElements.length > 0) {
             // Calculate initial y to vertically center the text block
-            const lineHeight = 20; // Approximation based on font-size in CSS
-            const initialY = 75 - (lineHeight * (tspanElements.length - 1)) / 2;
+            const lineHeight = 24; // Updated to match font-size
+            const initialY = 150 - (lineHeight * (tspanElements.length - 1)) / 2;
 
-            svg += `<text x="75" y="${initialY}" class="circle-text">`;
+            svg += `<text x="150" y="${initialY}" class="circle-text">`;
             tspanElements.forEach((tspan, index) => {
-                svg += `<tspan x="75" dy="${index === 0 ? 0 : '1.2em'}" fill="${tspan.color}">${tspan.text}</tspan>`;
+                svg += `<tspan x="150" dy="${index === 0 ? 0 : '1.2em'}" fill="${tspan.color}">${tspan.text}</tspan>`;
             });
             svg += `</text>`;
         }
