@@ -18,6 +18,7 @@ PROJECT_ID=$(echo "$SWITCH_RESPONSE" | cut -d'|' -f2)
 
 # 3. Export the project ID in all cases
 export GOOGLE_CLOUD_PROJECT=$PROJECT_ID
+export GEMINI_CLI_HOME="/your/path/to/.gemini-collection/$PROJECT_ID"
 
 # 4. Show message based on switch status
 if [[ "$SWITCH_STATUS" == "1" ]]; then

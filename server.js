@@ -2,7 +2,6 @@ const express = require("express");
 const cron = require("node-cron");
 const fs = require("fs").promises;
 const path = require("path");
-const { exec } = require("child_process");
 const axios = require("axios");
 
 const app = express();
@@ -268,7 +267,7 @@ async function fetchGeminiStats() {
         while (taskQueue.length > 0) {
           const subfolder = taskQueue.shift();
           if (subfolder) {
-            const configDir = path.join(collectionPath, subfolder);
+            const configDir = path.join(collectionPath, subfolder, ".gemini");
             const usageData = await getGeminiUsage(configDir, subfolder);
             const email = await getEmail(configDir);
             const isCurrent = subfolder === currentProjectId;
@@ -347,7 +346,9 @@ async function fetchGeminiStats() {
     }
   }
 
-  metrics.sort((a, b) => (a.isCurrent === b.isCurrent ? 0 : a.isCurrent ? -1 : 1));
+  metrics.sort((a, b) =>
+    a.isCurrent === b.isCurrent ? 0 : a.isCurrent ? -1 : 1,
+  );
 
   return {
     metrics,
@@ -389,28 +390,14 @@ app.put("/api/try-switch", async (req, res) => {
 
   // Case 1: A switch is recommended.
   if (preferredProjectId) {
-    const srcDir = path.join(".gemini-collection", preferredProjectId);
     const destDir = ".gemini";
 
     try {
-      const entries = await fs.readdir(destDir);
-      for (const entry of entries) {
-        if (entry !== "tmp") {
-          await fs.rm(path.join(destDir, entry), {
-            recursive: true,
-            force: true,
-          });
-        }
-      }
       await fs.writeFile(
         path.join(destDir, "current-project"),
         preferredProjectId,
         { flag: "w" },
       );
-      await fs.cp(srcDir, destDir, {
-        recursive: true,
-        filter: (source) => path.basename(source) !== "tmp",
-      });
       return res.status(200).send(`1|${preferredProjectId}`);
     } catch (error) {
       console.error(`Error switching account: ${error}`);
